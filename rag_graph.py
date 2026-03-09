@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from langgraph.graph import StateGraph, END
 from langchain_core.runnables import RunnableLambda
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain.vectorstores import Chroma
+from langchain_chroma import Chroma
 import requests
 from bs4 import BeautifulSoup
 

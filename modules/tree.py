@@ -5,7 +5,7 @@ import re
 import requests
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
-from langchain.callbacks import OpenAICallbackHandler
+from langchain_community.callbacks.openai_info import OpenAICallbackHandler
 from contextlib import contextmanager
 from agent import run_agent_task
 

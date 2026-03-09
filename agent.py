@@ -6,7 +6,7 @@ from urllib.parse import urljoin, urlparse
 
 from langchain_classic.agents import initialize_agent, Tool
 from langchain_classic.agents.agent_types import AgentType
-from langchain_classic.memory import ConversationBufferMemo
+from langchain_classic.memory import ConversationBufferMemory
 from langchain_openai import ChatOpenAI
 from langchain_core.tools import tool
 

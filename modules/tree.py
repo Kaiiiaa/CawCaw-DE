@@ -9,6 +9,18 @@ from langchain_community.callbacks.openai_info import OpenAICallbackHandler
 from contextlib import contextmanager
 from agent import run_agent_task
 
+import os
+import subprocess
+from pathlib import Path
+
+PW_CACHE = Path("/home/appuser/.cache/ms-playwright")
+
+if not PW_CACHE.exists():
+    subprocess.run(
+        ["python", "-m", "playwright", "install", "chromium"],
+        check=False,
+    )
+    
 MAX_LINKS_PER_PAGE = 150
 MAX_DEPTH = 3
 

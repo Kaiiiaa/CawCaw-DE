@@ -11,9 +11,9 @@ from langchain.chains.summarize import load_summarize_chain
 from langchain.chat_models import ChatOpenAI
 from tqdm import tqdm
 
-# --- Load environment variables ---
-load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+import streamlit as st
+
+OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 
 # --- Paths ---
 PDF_FILES = [

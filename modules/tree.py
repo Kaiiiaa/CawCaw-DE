@@ -1,27 +1,26 @@
-import streamlit as st
-from urllib.parse import urlparse, urljoin
-import pandas as pd
+import ast
 import re
+from urllib.parse import urlparse, urljoin
+
+import pandas as pd
 import requests
+import streamlit as st
 from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
 from langchain_community.callbacks.openai_info import OpenAICallbackHandler
-from contextlib import contextmanager
+
 from agent import run_agent_task
 
-import subprocess
-from pathlib import Path
-
-PW_CACHE = Path("/home/appuser/.cache/ms-playwright")
-
-if not PW_CACHE.exists():
-    subprocess.run(
-        ["python", "-m", "playwright", "install", "chromium"],
-        check=False,
-    )
-    
 MAX_LINKS_PER_PAGE = 150
 MAX_DEPTH = 3
+
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/122.0.0.0 Safari/537.36"
+    )
+}
+
 
 def run():
     st.title("🧠 AI-Powered Homepage Category Extractor")
@@ -34,6 +33,10 @@ def run():
         return
 
     parsed = urlparse(start_url)
+    if not parsed.scheme or not parsed.netloc:
+        st.error("Please enter a valid URL, including https://")
+        return
+
     domain = f"{parsed.scheme}://{parsed.netloc}"
 
     visited = set()
@@ -43,18 +46,38 @@ def run():
     link_sources = {}
 
     with st.spinner("🔍 Crawling raw links..."):
-        category_tree = crawl(start_url, domain, visited, raw_links, link_sources, hierarchy_levels, parent="Root", depth=0)
+        category_tree = crawl(
+            start_url,
+            domain,
+            visited,
+            raw_links,
+            link_sources,
+            hierarchy_levels,
+            parent="Root",
+            depth=0,
+        )
 
     if raw_links:
         st.subheader("🔗 Raw Links Found")
         st.json(raw_links)
 
-        # Download Raw Links
-        raw_df = pd.DataFrame([
-            {"Label": label, "URL": url, "Source": link_sources.get(label, ""), "Hierarchy Level": hierarchy_levels.get(label, "")}
-            for label, url in raw_links.items()
-        ])
-        st.download_button("⬇️ Download Raw Links", raw_df.to_csv(index=False), "raw_links.csv", "text/csv")
+        raw_df = pd.DataFrame(
+            [
+                {
+                    "Label": label,
+                    "URL": url,
+                    "Source": link_sources.get(label, ""),
+                    "Hierarchy Level": hierarchy_levels.get(label, ""),
+                }
+                for label, url in raw_links.items()
+            ]
+        )
+        st.download_button(
+            "⬇️ Download Raw Links",
+            raw_df.to_csv(index=False),
+            "raw_links.csv",
+            "text/csv",
+        )
 
     final_links = {}
 
@@ -66,14 +89,14 @@ def run():
 
             st.text_area("🧠 Agent Output", result, height=300)
 
-            # 🧠 Capture result into final_links
             try:
-                final_links = eval(result) if result.strip().startswith("{") else {}
+                final_links = ast.literal_eval(result) if result.strip().startswith("{") else {}
+                if not isinstance(final_links, dict):
+                    final_links = {}
             except Exception as e:
                 st.warning(f"⚠️ Could not parse agent output: {e}")
                 final_links = {}
 
-            # 📊 Token usage
             if handler.total_tokens > 0:
                 st.markdown("### 📊 Token Usage & Cost")
                 st.markdown(f"- **Prompt Tokens:** {handler.prompt_tokens}")
@@ -83,16 +106,19 @@ def run():
             else:
                 st.warning("⚠️ No token usage detected. Was the agent run correctly?")
 
-
     if final_links:
         st.success("✅ Filtered Category Links")
         st.json(final_links)
 
-        filtered_df = pd.DataFrame([
-            {"Label": label, "URL": url}
-            for label, url in final_links.items()
-        ])
-        st.download_button("⬇️ Download Filtered Links", filtered_df.to_csv(index=False), "filtered_links.csv", "text/csv")
+        filtered_df = pd.DataFrame(
+            [{"Label": label, "URL": url} for label, url in final_links.items()]
+        )
+        st.download_button(
+            "⬇️ Download Filtered Links",
+            filtered_df.to_csv(index=False),
+            "filtered_links.csv",
+            "text/csv",
+        )
 
     if show_tree and category_tree:
         st.subheader("🌳 Category Tree View")
@@ -100,42 +126,39 @@ def run():
 
 
 def crawl(url, domain, visited, raw_links, link_sources, hierarchy_levels, parent, depth):
-    if url in visited or len(visited) > MAX_LINKS_PER_PAGE or depth > MAX_DEPTH:
+    if url in visited or len(visited) >= MAX_LINKS_PER_PAGE or depth > MAX_DEPTH:
         return {}
 
     visited.add(url)
     tree = {}
 
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(
-                headless=True,
-                args=["--no-sandbox", "--disable-dev-shm-usage"]
-            )
-            try:
-                page = browser.new_page()
-                page.goto(url, timeout=15000, wait_until="domcontentloaded")
-                content = page.content()
-            finally:
-                browser.close()
+        response = requests.get(url, headers=HEADERS, timeout=15)
+        response.raise_for_status()
 
-        soup = BeautifulSoup(content, "html.parser")
+        soup = BeautifulSoup(response.text, "html.parser")
         count = 0
 
         for a in soup.find_all("a", href=True):
-            if count > MAX_LINKS_PER_PAGE:
+            if count >= MAX_LINKS_PER_PAGE:
                 break
 
-            href = urljoin(url, a["href"])
-            label = a.get_text(strip=True)
+            href = urljoin(url, a["href"]).strip()
+            label = a.get_text(" ", strip=True)
 
-            if not is_internal_link(href, domain) or not label:
+            if not is_internal_link(href, domain):
+                continue
+
+            if not label:
                 continue
 
             raw_links[label] = href
             link_sources[label] = "dom"
             hierarchy_levels[label] = f"Level {depth}"
-            tree.setdefault(parent, {})[label] = href
+
+            if parent not in tree:
+                tree[parent] = {}
+            tree[parent][label] = href
 
             if re.search(r"/(category|departments|browse|cp|c)/", href):
                 subtree = crawl(
@@ -159,15 +182,21 @@ def crawl(url, domain, visited, raw_links, link_sources, hierarchy_levels, paren
     return tree
 
 
-
 def is_internal_link(href, domain):
-    return domain in href and not href.startswith("#") and not href.startswith("javascript")
+    if not href:
+        return False
+
+    href_lower = href.lower()
+
+    if href_lower.startswith("#") or href_lower.startswith("javascript:"):
+        return False
+
+    return href.startswith(domain)
+
 
 def display_tree(tree, level=0):
-    indent = "    " * level
+    indent = "&nbsp;" * 4 * level
     for parent, children in tree.items():
-        st.markdown(f"{indent}**{parent}**")
+        st.markdown(f"{indent}**{parent}**", unsafe_allow_html=True)
         for label, url in children.items():
-            st.markdown(f"{indent}- [{label}]({url})")
-
-print("🧪 After run_agent_task:")
+            st.markdown(f'{indent}- <a href="{url}" target="_blank">{label}</a>', unsafe_allow_html=True)

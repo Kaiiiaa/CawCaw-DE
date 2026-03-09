@@ -2,7 +2,7 @@
 import streamlit as st
 from rag_graph import create_graph
 from langchain_openai import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
+from langchain_chroma import Chroma
 
 def run():
     st.title("🧠 Agentic Page Inspector (LangGraph RAG)")

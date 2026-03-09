@@ -17,7 +17,9 @@ import io
 from lxml import etree
 from playwright.sync_api import sync_playwright
 
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+import streamlit as st
+
+OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 
 @tool
 def crawl_tool(url: str) -> str:

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 streamlit
 requests
 beautifulsoup4
@@ -13,19 +12,4 @@ langgraph
 chromadb
 python-dotenv
 tiktoken
-=======
-streamlit
-requests
-beautifulsoup4
-pandas
-openai
-playwright
-playwright-stealth
-langchain
-langchain-core
-langchain-openai
-langgraph
-chromadb
-python-dotenv
-tiktoken
->>>>>>> 54a36f113c9e3b89b75e0c090f5d951ef296cd2c
+

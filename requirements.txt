@@ -3,7 +3,7 @@ requests
 beautifulsoup4
 pandas
 openai
-playwright
+playwright==1.49.0
 playwright-stealth
 python-dotenv
 tiktoken

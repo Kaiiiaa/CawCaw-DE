@@ -6,8 +6,9 @@ from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
-load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+import streamlit as st
+
+OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 
 def run():
     st.title("📈 Imma lazy manager - analizuok timelogs už mane")

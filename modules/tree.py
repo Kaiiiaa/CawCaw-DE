@@ -9,7 +9,6 @@ from langchain_community.callbacks.openai_info import OpenAICallbackHandler
 from contextlib import contextmanager
 from agent import run_agent_task
 
-import os
 import subprocess
 from pathlib import Path
 
@@ -20,6 +19,11 @@ if not PW_CACHE.exists():
         ["python", "-m", "playwright", "install", "chromium"],
         check=False,
     )
+
+browser = p.chromium.launch(
+    headless=True,
+    args=["--no-sandbox", "--disable-dev-shm-usage"],
+)
     
 MAX_LINKS_PER_PAGE = 150
 MAX_DEPTH = 3
@@ -108,7 +112,7 @@ def crawl(url, domain, visited, raw_links, link_sources, hierarchy_levels, paren
 
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+             = p.chromium.launch(headless=True)
             page = browser.new_page()
             page.goto(url, timeout=15000, wait_until='domcontentloaded')
             content = page.content()

@@ -12,8 +12,9 @@ from langchain_core.runnables import RunnableLambda
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langgraph.graph import StateGraph, END
 
-load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+import streamlit as st
+
+OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 
 HEADERS = {
     "User-Agent": (
@@ -276,6 +277,7 @@ def create_graph():
     builder.add_edge("save", END)
 
     return builder.compile()
+
 
 
 

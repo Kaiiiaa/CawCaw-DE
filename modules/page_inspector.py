@@ -5,7 +5,7 @@ def run():
     st.title("🧠 Agentic Page Inspector (LangGraph RAG)")
 
     url = st.text_input("Enter URL to analyze:", "").strip()
-
+print("RETRIEVER_INVOKE_ACTIVE")
     if st.button("🚀 Run LangGraph Agent"):
         if not url:
             st.warning("Please enter a URL.")

@@ -15,7 +15,7 @@ from langgraph.graph import StateGraph, END
 import streamlit as st
 
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
-
+print("RAG_GRAPH_VERSION_TEST_3")
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -277,6 +277,7 @@ def create_graph():
     builder.add_edge("save", END)
 
     return builder.compile()
+
 
 
 

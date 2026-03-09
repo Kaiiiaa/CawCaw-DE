@@ -11,7 +11,7 @@ chromadb
 lxml
 tqdm
 pypdf
-
+langchain-classic
 langchain
 langchain-core
 langchain-openai

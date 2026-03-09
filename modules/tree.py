@@ -98,6 +98,7 @@ def run():
         st.subheader("🌳 Category Tree View")
         display_tree(category_tree)
 
+
 def crawl(url, domain, visited, raw_links, link_sources, hierarchy_levels, parent, depth):
     if url in visited or len(visited) > MAX_LINKS_PER_PAGE or depth > MAX_DEPTH:
         return {}
@@ -107,17 +108,20 @@ def crawl(url, domain, visited, raw_links, link_sources, hierarchy_levels, paren
 
     try:
         with sync_playwright() as p:
-        browser = p.chromium.launch(
-            headless=True,
-            args=["--no-sandbox", "--disable-dev-shm-usage"]
-        )
-        page = browser.new_page()
-        page.goto(url, timeout=15000, wait_until="domcontentloaded")
-        content = page.content()
-        browser.close()
+            browser = p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-dev-shm-usage"]
+            )
+            try:
+                page = browser.new_page()
+                page.goto(url, timeout=15000, wait_until="domcontentloaded")
+                content = page.content()
+            finally:
+                browser.close()
 
         soup = BeautifulSoup(content, "html.parser")
         count = 0
+
         for a in soup.find_all("a", href=True):
             if count > MAX_LINKS_PER_PAGE:
                 break
@@ -134,7 +138,16 @@ def crawl(url, domain, visited, raw_links, link_sources, hierarchy_levels, paren
             tree.setdefault(parent, {})[label] = href
 
             if re.search(r"/(category|departments|browse|cp|c)/", href):
-                subtree = crawl(href, domain, visited, raw_links, link_sources, hierarchy_levels, parent=label, depth=depth+1)
+                subtree = crawl(
+                    href,
+                    domain,
+                    visited,
+                    raw_links,
+                    link_sources,
+                    hierarchy_levels,
+                    parent=label,
+                    depth=depth + 1,
+                )
                 if subtree:
                     tree.update(subtree)
 
@@ -144,6 +157,8 @@ def crawl(url, domain, visited, raw_links, link_sources, hierarchy_levels, paren
         st.warning(f"Failed to crawl {url}: {e}")
 
     return tree
+
+
 
 def is_internal_link(href, domain):
     return domain in href and not href.startswith("#") and not href.startswith("javascript")

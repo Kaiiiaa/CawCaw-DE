@@ -12,4 +12,4 @@ langgraph
 chromadb
 python-dotenv
 tiktoken
-
+langchain-chroma

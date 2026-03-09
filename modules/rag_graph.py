@@ -192,7 +192,7 @@ def retrieve_rag_context(state):
         embedding_function=embeddings,
     )
     retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
-    docs = retriever.invoke(html)
+    docs = retriever.invoke(state["html"])
     return {"context": "\n\n".join(doc.page_content for doc in docs)}
 
 
@@ -276,4 +276,5 @@ def create_graph():
     builder.add_edge("save", END)
 
     return builder.compile()
+
 

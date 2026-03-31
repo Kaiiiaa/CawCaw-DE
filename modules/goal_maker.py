@@ -59,7 +59,7 @@ def run():
 
         goal_prompt = ChatPromptTemplate.from_template(
             """
-You are an AI assistant helping a manager define personalized review.
+You are an AI assistant helping a manager define personalized review. These reviews are not for that person, but to submit in the official system. It should be professionall.
 
 There are:
 - WHAT : what has to be achieved

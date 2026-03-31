@@ -95,11 +95,11 @@ Performance Review:
                 "what": what,
                 "level_description": seniority_description,
                 "objectives": objectives,
-                "expectations": expectation,
+                "expectation": expectation,
                 "improvements": improvements,
                 "company_goals": company_goals
             })
-
+        
         full_text = result.content
         
         smart_goals = ""
@@ -107,7 +107,7 @@ Performance Review:
         
         if "Performance Review:" in full_text:
             parts = full_text.split("Performance Review:", 1)
-            smart_goals = parts[0].replace("SMART Goals:", "").strip()
+            smart_goals = parts[0].replace("What/How Review:", "").strip()
             performance_review = parts[1].strip()
         else:
             smart_goals = full_text.strip()

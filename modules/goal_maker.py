@@ -95,10 +95,10 @@ Performance Review:
             })
 
         full_text = result.content
-
+        
         smart_goals = ""
         performance_review = ""
-
+        
         if "Performance Review:" in full_text:
             parts = full_text.split("Performance Review:", 1)
             smart_goals = parts[0].replace("SMART Goals:", "").strip()
@@ -106,13 +106,13 @@ Performance Review:
         else:
             smart_goals = full_text.strip()
             performance_review = ""
-
+        
         st.subheader(f"✅ SMART Goals for {name}")
         st.text_area("SMART Goals", smart_goals, height=250)
-
+        
         st.subheader("📝 Performance Review")
         st.text_area("Performance Review", performance_review, height=150)
-
+        
         df = pd.DataFrame([{
             "Employee": name,
             "Role": role,

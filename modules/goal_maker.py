@@ -13,7 +13,7 @@ def run():
     st.title("🎯 Kokie planai toliau?")
 
     st.markdown(
-        "Fill in the employee's information, set team and company goals, and generate SMART HOW and WHAT goals personalized to their role and seniority."
+        "Fill in the employee's information, set team and company goals, and generate HOW and WHAT goals personalized to their role and seniority."
     )
 
     with st.form("goal_form"):
@@ -33,6 +33,10 @@ def run():
             "🏢 Employee improvement areas",
             placeholder="e.g., Better communication, etc."
         )
+        expectation = st.text_area(
+            "Expected rewiev/rating",
+            placeholder="e.g., very niiice"
+        )
         company_goals = st.text_area(
             "🏢 Company Goals",
             placeholder="e.g., Scale to new markets, ensure compliance"
@@ -41,7 +45,7 @@ def run():
         submitted = st.form_submit_button("🚀 Generate SMART Goals")
 
     if submitted:
-        if not name or not role or not objectives or not improvements or not company_goals:
+        if not name or not role or not objectives or not improvements or not expectation or not company_goals:
             st.error("❌ Supildyk iki galo, gi ne daug prašau.")
             return
 
@@ -55,11 +59,11 @@ def run():
 
         goal_prompt = ChatPromptTemplate.from_template(
             """
-You are an AI assistant helping a manager define personalized SMART goals.
+You are an AI assistant helping a manager define personalized review.
 
 There are:
-- WHAT goals: what has to be achieved
-- HOW goals: how the work should be done, with focus on empathy, collaboration, ownership, and communication
+- WHAT : what has to be achieved
+- HOW : how the work should be done, with focus on empathy, collaboration, ownership, and communication
 
 Employee Name: {name}
 Role: {role}
@@ -71,11 +75,12 @@ Previous or suggested WHAT: {what}
 Last 6 months performed objectives: {objectives}
 Improvements: {improvements}
 Company Goals: {company_goals}
+Expected review/rating (out of 5, where 3 is meets expectations) : {expectation}
 
 Return the response in exactly this format:
 
-SMART Goals:
-[Write 3 SMART WHAT goals and 3 HOW goals here]
+ What/How reviewe:
+[Write HOW and WHAT review here]
 
 Performance Review:
 [Write a short performance review here, max 5 sentences, simple language]
@@ -90,6 +95,7 @@ Performance Review:
                 "what": what,
                 "level_description": seniority_description,
                 "objectives": objectives,
+                "expectations": expectation,
                 "improvements": improvements,
                 "company_goals": company_goals
             })
